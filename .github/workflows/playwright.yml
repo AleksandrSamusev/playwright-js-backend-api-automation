@@ -9,13 +9,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      
       - uses: actions/setup-node@v4
         with:
           node-version: lts/*
+          
       - name: Install dependencies
         run: npm ci
-      - name: Install Playwright Browsers
-        run: npx playwright install --with-deps
+        
+      # BROWSER INSTALLATION REMOVED - This will save significant time
+      
       - name: Run Playwright tests
         run: npx playwright test
         env:
@@ -24,6 +27,8 @@ jobs:
   deploy:
     name: Trigger Koyeb Redeploy
     needs: test
+    # Only runs if the 'test' job passes AND the backend branch was 'main'
+    if: github.event.client_payload.branch == 'main'
     runs-on: ubuntu-latest
     steps:
       - name: Install and configure the Koyeb CLI
@@ -31,10 +36,5 @@ jobs:
         with:
           api_token: "${{ secrets.KOYEB_API_TOKEN }}"
 
-      - name: Debug - List Koyeb Services
-        # This will print all names to your GitHub logs for verification
-        run: koyeb services list
-
       - name: Redeploy Service
-        # Updated based on your screenshot: <APP_NAME>/<SERVICE_NAME>
         run: koyeb service redeploy ratty-merrily/backend-for-api-testing
