@@ -1,0 +1,35 @@
+name: Test and Deploy
+on:
+  repository_dispatch:
+    types: [trigger-api-tests] # This must match the 'event-type' in your Backend repo
+
+jobs:
+  test:
+    name: Run Playwright API Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+      - name: Install dependencies
+        run: npm ci
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
+      - name: Run Playwright tests
+        run: npx playwright test
+        env:
+          BASE_URL: ${{ secrets.BASE_URL }}
+
+  deploy:
+    name: Trigger Koyeb Redeploy
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install and configure the Koyeb CLI
+        uses: koyeb-community/koyeb-actions@v2
+        with:
+          api_token: "${{ secrets.KOYEB_API_TOKEN }}"
+      - name: Redeploy Service
+        # Final check: Ensure these names match your Koyeb dashboard exactly
+        run: koyeb service redeploy ratty-merrily/dev-practice-shopapp

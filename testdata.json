@@ -1,0 +1,239 @@
+{
+  "contractExpectations": {
+    "errorResponse": ["success", "errorCode", "message", "errors", "path", "timestamp"],
+    "successResponse": ["success", "message", "data", "timestamp"],
+    "userObject": ["id", "firstName", "lastName", "email", "phoneNumber"]
+  },
+
+  "userEndpoints": {
+    "base": "api/v1/users"
+  },
+
+  "sharedUserScenarios": {
+    "positive": [
+      {
+        "testName": "full user with all valid values",
+        "payload": {
+          "firstName": "Bernardo",
+          "lastName": "Honda",
+          "email": "bernardo.honda@test.jp",
+          "phoneNumber": "+17026201348"
+        },
+        "expected": { "status": 200, "message": "Success" }
+      }
+    ],
+    "negative": [
+      {
+        "testName": "conflict: already existing email",
+        "payload": { "email": "bernardo.honda@test.jp" },
+        "expected": { "status": 409, "error": "Email already in use" }
+      }
+    ]
+  },
+
+  "sharedNameScenarios": {
+    "positive": [
+      { "testName": "standard valid value", "payload": { "value": "Amanda" }, "expected": { "status": 200, "message": "Success" } },
+      { "testName": "boundary: 2 chars", "payload": { "value": "Am" }, "expected": { "status": 200, "message": "Success" } },
+      {
+        "testName": "boundary: 50 chars",
+        "payload": { "value": "JuliaJuliaJuliaJuliaJuliaJuliaJuliaJuliaJuliaJulia" },
+        "expected": { "status": 200, "message": "Success" }
+      },      
+      { "testName": "hyphen or space", "payload": { "value": "Maria-Corsa Bebetta" }, "expected": { "status": 200, "message": "Success" } }
+    ],
+    "negative": [
+      { "testName": "empty string", "payload": { "value": "" }, "expected": { "status": 400, "error": "must not be Blank" } },
+      { "testName": "null value", "payload": { "value": null }, "expected": { "status": 400, "error": "must not be Blank" } },
+      { "testName": "only whitespaces", "payload": { "value": "     " }, "expected": { "status": 400, "error": "must not be Blank" } },
+      {
+        "testName": "SQL injection attempt",
+        "payload": { "value": "Bernardo'; DROP TABLE users;--" },
+        "expected": { "status": 400, "error": "must only contain letters, hyphens, and spaces" }
+      },
+      {
+        "testName": "XSS payload",
+        "payload": { "value": "<script>alert('xss')</script>" },
+        "expected": { "status": 400, "error": "must only contain letters, hyphens, and spaces" }
+      },
+      {
+        "testName": "numeric data",
+        "payload": { "value": "123" },
+        "expected": { "status": 400, "error": "must only contain letters, hyphens, and spaces" }
+      },
+      {
+        "testName": "special characters",
+        "payload": { "value": "/#@$" },
+        "expected": { "status": 400, "error": "must only contain letters, hyphens, and spaces" }
+      },
+      { "testName": "boundary: 1 char", "payload": { "value": "A" }, "expected": { "status": 400, "error": "must be between 2 and 50 characters" } },
+      {
+        "testName": "boundary: 51 chars",
+        "payload": { "value": "JuliaJuliaJuliaJuliaJuliaJuliaJuliaJuliaJuliaJuliaA" },
+        "expected": { "status": 400, "error": "must be between 2 and 50 characters" }
+      },
+      {
+        "testName": "comma injection",
+        "payload": { "value": "Julia, A" },
+        "expected": { "status": 400, "error": "must only contain letters, hyphens, and spaces" }
+      }
+    ]
+  },
+
+  "sharedEmailScenarios": {
+    "positive": [
+      { "testName": "standard valid email", "payload": { "value": "test.user@example.com" }, "expected": { "status": 200, "message": "Success" } },
+      {
+        "testName": "normalization: mixed case domain",
+        "payload": { "value": "user@DOMAIN.CoM" },
+        "expected": { "status": 200, "message": "Success" }
+      },
+      { "testName": "sub-addressing support", "payload": { "value": "user+extra@test.com" }, "expected": { "status": 200, "message": "Success" } },
+      {
+        "testName": "long TLD support (6 chars)",
+        "payload": { "value": "admin@company.museum" },
+        "expected": { "status": 200, "message": "Success" }
+      },
+      {
+        "testName": "normalization: leading/trailing spaces",
+        "payload": { "value": "  trimmed@test.com  " },
+        "expected": { "status": 200, "message": "Success" }
+      }
+    ],
+    "negative": [
+      { "testName": "blank value", "payload": { "value": "" }, "expected": { "status": 400, "error": "Email address must not be Blank" } },
+      { "testName": "null value", "payload": { "value": null }, "expected": { "status": 400, "error": "Email address must not be Blank" } },
+      { "testName": "missing @ symbol", "payload": { "value": "plainaddress.com" }, "expected": { "status": 400, "error": "valid email address" } },
+      { "testName": "missing domain dot", "payload": { "value": "user@localhost" }, "expected": { "status": 400, "error": "valid email address" } },
+      {
+        "testName": "TLD too short (1 char)",
+        "payload": { "value": "user@domain.c" },
+        "expected": { "status": 400, "error": "valid email address" }
+      },
+      {
+        "testName": "TLD too long (7+ chars)",
+        "payload": { "value": "user@domain.corporate" },
+        "expected": { "status": 400, "error": "valid email address" }
+      },
+      {
+        "testName": "RFC length boundary (exceeding 254 characters)",
+        "payload": {
+          "value": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@test.com"
+        },
+        "expected": {
+          "status": 400,
+          "error": "Email is too long (maximum 254 characters)"
+        }
+      },
+      {
+        "testName": "invalid characters",
+        "payload": { "value": "user(comment)@test.com" },
+        "expected": { "status": 400, "error": "valid email address" }
+      }
+    ]
+  },
+
+  "sharedPhoneNumberScenarios": {
+    "positive": [
+      { "testName": "standard valid phone", "payload": { "value": "+17026201348" }, "expected": { "status": 200, "message": "Success" } },
+      { "testName": "boundary: 11 digits", "payload": { "value": "+12345678901" }, "expected": { "status": 200, "message": "Success" } },
+      { "testName": "boundary: 15 digits", "payload": { "value": "+123456789012345" }, "expected": { "status": 200, "message": "Success" } }
+    ],
+    "negative": [
+      { "testName": "blank value", "payload": { "value": "" }, "expected": { "status": 400, "error": "Phone number must not be blank" } },
+      {
+        "testName": "missing plus sign",
+        "payload": { "value": "17026201348" },
+        "expected": { "status": 400, "error": "must start with '+' followed by 11 to 15 digits" }
+      },
+      {
+        "testName": "alphabetic characters",
+        "payload": { "value": "+17026201348a" },
+        "expected": { "status": 400, "error": "must start with '+' followed by 11 to 15 digits" }
+      },
+      {
+        "testName": "too short (10 digits)",
+        "payload": { "value": "+1234567890" },
+        "expected": { "status": 400, "error": "must start with '+' followed by 11 to 15 digits" }
+      },
+      {
+        "testName": "too long (16 digits)",
+        "payload": { "value": "+1234567890123456" },
+        "expected": { "status": 400, "error": "must start with '+' followed by 11 to 15 digits" }
+      }
+    ]
+  },
+  "sharedSortingScenarios": [
+    {
+      "testName": "sort by first name ASC",
+      "queryParam": "FIRST_NAME_ASC",
+      "field": "firstName",
+      "order": "asc"
+    },
+    {
+      "testName": "sort by last name DESC",
+      "queryParam": "LAST_NAME_DESC",
+      "field": "lastName",
+      "order": "desc"
+    },
+    {
+      "testName": "sort by id DESC",
+      "queryParam": "ID_DESC",
+      "field": "id",
+      "order": "desc"
+    }
+  ],
+
+  "updateScenarios": {
+    "positive": [
+      {
+        "testName": "update all fields",
+        "payload": { "firstName": "Mick", "lastName": "Muller", "email": "m.m@test.test", "phoneNumber": "+17026201348" },
+        "expected": { "status": 200, "message": "Success" }
+      }
+    ]
+  },
+
+  "getScenarios": {
+    "positive": [
+      {
+        "testName": "retrieve user by valid id",
+        "expected": { "status": 200, "message": "Success" }
+      },
+      {
+        "testName": "retrieve all users list",
+        "expected": { "status": 200, "message": "Success" }
+      }
+    ],
+    "negative": [
+      {
+        "testName": "retrieve non-existing id",
+        "params": { "id": "999999999" },
+        "expected": { "status": 404, "error": "User not found" }
+      },
+      {
+        "testName": "retrieve with invalid id format",
+        "params": { "id": "abc-123" },
+        "expected": {
+          "status": 400,
+          "error": "must be of type 'Long'"
+        }
+      }
+    ]
+  },
+  "deleteScenarios": {
+    "positive": [
+      {
+        "testName": "successful deletion of existing user",
+        "expected": { "status": 200, "message": "Success" }
+      }
+    ],
+    "negative": [
+      {
+        "testName": "delete with invalid id format",
+        "params": { "id": "abc-123" },
+        "expected": { "status": 400, "error": "must be of type 'Long'" }
+      }
+    ]
+  }
+}
