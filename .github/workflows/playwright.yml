@@ -1,7 +1,7 @@
 name: Test and Deploy
 on:
   repository_dispatch:
-    types: [trigger-api-tests] # This must match the 'event-type' in your Backend repo
+    types: [trigger-api-tests] # Triggered by the Backend repo ping
 
 jobs:
   test:
@@ -30,6 +30,11 @@ jobs:
         uses: koyeb-community/koyeb-actions@v2
         with:
           api_token: "${{ secrets.KOYEB_API_TOKEN }}"
+
+      - name: Debug - List Koyeb Services
+        # This will print all names to your GitHub logs for verification
+        run: koyeb services list
+
       - name: Redeploy Service
-        # Final check: Ensure these names match your Koyeb dashboard exactly
-        run: koyeb service redeploy ratty-merrily/dev-practice-shopapp
+        # Updated based on your screenshot: <APP_NAME>/<SERVICE_NAME>
+        run: koyeb service redeploy ratty-merrily/backend-for-api-testing
