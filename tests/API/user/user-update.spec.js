@@ -68,7 +68,7 @@ test.describe("User update - dynamic validation", () => {
             expect(userData.data.address[key].toString().trim()).toBe(expectedValue.toString().trim());
           }
         });
-        });
+        }); 
       }
 
       for (const scenario of scenarios.negative) {
