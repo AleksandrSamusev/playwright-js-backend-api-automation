@@ -14,7 +14,7 @@ test.describe("User API - Dynamic Creation Suite", () => {
       const response = await request.post(userEndpoint, {
         data: { ...validBase, email: `contract.${Date.now()}@test.com` },
       });
-      const body = await response.json();
+      const body = await response.json();  
       if (body.data?.id) createdUserIds.push(body.data.id);
 
       expect(response.status()).toBe(201);
