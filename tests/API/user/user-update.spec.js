@@ -26,12 +26,13 @@ test.describe("User update - dynamic validation", () => {
 
   for (const { key, scenarios, label } of fieldConfigs) {
     test.describe(`Field: ${key}`, () => {
+
+
+
       for (const scenario of scenarios.positive) {
         test(`SUCCESS: ${scenario.testName}`, async ({ request }) => {
           // PRO: Merger - Keep all other fields valid so the validator doesn't reject the PUT
-          const updatePayload = {
-            ...validBase,
-            [key]: scenario.payload.value,
+          const updatePayload = {...validBase, [key]: scenario.payload.value,
             // Ensure email is unique so it doesn't collide with the storage file
             email: key === "email" ? scenario.payload.value : `update.${Date.now()}@test.com`,
           };
@@ -61,6 +62,9 @@ test.describe("User update - dynamic validation", () => {
           });
         });
       }
+
+
+
 
       for (const scenario of scenarios.negative) {
         test(`REJECT: ${scenario.testName}`, async ({ request }) => {

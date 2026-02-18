@@ -14,17 +14,22 @@ test.describe("User API - Dynamic Creation Suite", () => {
       const response = await request.post(userEndpoint, {
         data: { ...validBase, email: `contract.${Date.now()}@test.com` },
       });
-      const body = await response.json();  
+      const body = await response.json();
       if (body.data?.id) createdUserIds.push(body.data.id);
 
       expect(response.status()).toBe(201);
       testData.contractExpectations.successResponse.forEach((field) => {
         expect.soft(body).toHaveProperty(field);
       });
+      testData.contractExpectations.userObject.forEach((field) => {
+        expect.soft(body.data).toHaveProperty(field);
+      });
+      testData.contractExpectations.addressObject.forEach((field) => {
+        expect.soft(body.data.address).toHaveProperty(field);
+      });
     });
 
     await test.step("Verify Error Schema", async () => {
-      // Send empty object to trigger error
       const response = await request.post(userEndpoint, { data: {} });
       const body = await response.json();
       expect(response.status()).toBe(400);
@@ -42,31 +47,83 @@ test.describe("User API - Dynamic Creation Suite", () => {
     { key: "lastName", scenarios: testData.sharedNameScenarios, label: "Last name" },
     { key: "email", scenarios: testData.sharedEmailScenarios, label: "Email address" },
     { key: "phoneNumber", scenarios: testData.sharedPhoneNumberScenarios, label: "Phone number" },
+    { key: "streetAddress", scenarios: testData.addressScenarios.streetAddressScenarios, label: "Street address" },
+    { key: "apartment", scenarios: testData.addressScenarios.apartmentScenarios, label: "Apartment" },
+    { key: "city", scenarios: testData.addressScenarios.cityScenarios, label: "City" },
+    { key: "state", scenarios: testData.addressScenarios.stateScenarios, label: "State" },
+    { key: "postalCode", scenarios: testData.addressScenarios.postalCodeScenarios, label: "Postal code" },
+    { key: "countryCode", scenarios: testData.addressScenarios.countryCodeScenarios, label: "Country code" },
   ];
 
   for (const { key, scenarios, label } of validationFields) {
-    test.describe(`Creation Validation: ${key}`, () => {
-      for (const scenario of scenarios.negative) {
-        test(`REJECT: ${scenario.testName}`, async ({ request }) => {
-          const payload = { ...validBase, [key]: scenario.payload.value };
+  test.describe(`Creation Validation: ${key}`, () => {
+    
+    for (const scenario of scenarios.positive) {
+      test(`SUCCESS: ${scenario.testName}`, async ({ request }) => {
+        // 1. FIX: Access value safely even if key is typoed (svaluee/cvaluey/streetAddress)
+        const rawValue = scenario.payload.value ?? Object.values(scenario.payload)[0];
+        
+        // 2. FIX: Correctly nest address fields so the API actually updates them
+        const addressFields = ["streetAddress", "apartment", "city", "state", "postalCode", "countryCode"];
+        let payload = { 
+          ...validBase, 
+          email: `success_test.${Date.now()}.${Math.random()}@test.com` 
+        };
 
-          const response = await request.post(userEndpoint, { data: payload });
-          expect(response.status()).toBe(400);
+        if (addressFields.includes(key)) {
+          payload.address = { ...validBase.address, [key]: rawValue };
+        } else {
+          payload[key] = rawValue;
+        }
 
-          const body = await response.json();
+        const response = await request.post(userEndpoint, { data: payload });
+        expect(response.status()).toBe(201);
+        
+        const body = await response.json();
+        const currentId = body.data.id; // Local scope variable
+        if (currentId) createdUserIds.push(currentId);
 
-          // 1. Prepare the expected string by replacing the placeholder
-          const expectedError = scenario.expected.error.replace("{{field}}", label);
+        await test.step(`Verify persistence`, async () => {
+          const verifyRes = await request.get(`${userEndpoint}/${currentId}`);
+          const userData = await verifyRes.json();
 
-          // 2. PRO CHECK: Search for the string inside the body.errors array
-          // We use some() to see if at least one error in the list matches
-          const errorExists = body.errors.some((err) => err.includes(expectedError));
+          let expectedValue = rawValue;
+          if (key === "email" && expectedValue) expectedValue = expectedValue.trim().toLowerCase();
 
-          expect(errorExists, `Expected error list ${JSON.stringify(body.errors)} to contain: "${expectedError}"`).toBeTruthy();
+          if (["firstName", "lastName", "phoneNumber"].includes(key)) {
+            expect(userData.data[key].toString().trim()).toBe(expectedValue.toString().trim());
+          } else if (addressFields.includes(key)) {
+            expect(userData.data.address[key].toString().trim()).toBe(expectedValue.toString().trim());
+          }
         });
-      }
-    });
-  }
+      });
+    }
+
+    for (const scenario of scenarios.negative) {
+      test(`REJECT: ${scenario.testName}`, async ({ request }) => {
+        const rawValue = scenario.payload.value ?? Object.values(scenario.payload)[0];
+        
+        let payload = { ...validBase };
+        const addressFields = ["streetAddress", "apartment", "city", "state", "postalCode", "countryCode"];
+
+        if (addressFields.includes(key)) {
+          payload.address = { ...validBase.address, [key]: rawValue };
+        } else {
+          payload[key] = rawValue;
+        }
+
+        const response = await request.post(userEndpoint, { data: payload });
+        expect(response.status()).toBe(400);
+
+        const body = await response.json();
+        const expectedError = scenario.expected.error.replace("{{field}}", label);
+        const errorExists = body.errors.some((err) => err.includes(expectedError));
+
+        expect(errorExists, `Expected error list to contain: "${expectedError}"`).toBeTruthy();
+      });
+    }
+  });
+}
 
   /**
    * SECTION 3: SHARED USER SCENARIOS (Conflict/Unique checks)
