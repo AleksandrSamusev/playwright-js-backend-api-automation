@@ -3,42 +3,46 @@ const testData = require("../../../testdata.json");
 
 test.describe("User update - dynamic validation", () => {
   let targetUserId;
-  let baseUrl = testData.userEndpoints.base;
-  // Store the base valid data
+  let userEndpoint = testData.userEndpoints.base;
   const validBase = testData.sharedUserScenarios.positive[0].payload;
 
   test.beforeAll(async ({ request }) => {
-    // PRO: Use a unique email for the setup user to avoid conflicts with shared tests
-    const setupPayload = { ...validBase, email: `setup.${Date.now()}@test.com` };
-
-    const response = await request.post(baseUrl, { data: setupPayload });
+    const response = await request.post(userEndpoint, { data: { ...validBase, email: `setup.${Date.now()}@test.com` } });
     expect(response.status()).toBe(201);
     const body = await response.json();
     targetUserId = body.data.id;
   });
 
-  const fieldConfigs = [
+  const validationFields = [
     { key: "firstName", scenarios: testData.sharedNameScenarios, label: "First name" },
     { key: "lastName", scenarios: testData.sharedNameScenarios, label: "Last name" },
     { key: "email", scenarios: testData.sharedEmailScenarios, label: "Email address" },
     { key: "phoneNumber", scenarios: testData.sharedPhoneNumberScenarios, label: "Phone number" },
+    { key: "streetAddress", scenarios: testData.addressScenarios.streetAddressScenarios, label: "Street address" },
+    { key: "apartment", scenarios: testData.addressScenarios.apartmentScenarios, label: "Apartment" },
+    { key: "city", scenarios: testData.addressScenarios.cityScenarios, label: "City" },
+    { key: "state", scenarios: testData.addressScenarios.stateScenarios, label: "State" },
+    { key: "postalCode", scenarios: testData.addressScenarios.postalCodeScenarios, label: "Postal code" },
+    { key: "countryCode", scenarios: testData.addressScenarios.countryCodeScenarios, label: "Country code" },
   ];
 
-  for (const { key, scenarios, label } of fieldConfigs) {
-    test.describe(`Field: ${key}`, () => {
-
-
-
+  for (const { key, scenarios, label } of validationFields) {
+    test.describe(`Update Validation:: ${key}`, () => {
       for (const scenario of scenarios.positive) {
         test(`SUCCESS: ${scenario.testName}`, async ({ request }) => {
-          // PRO: Merger - Keep all other fields valid so the validator doesn't reject the PUT
-          const updatePayload = {...validBase, [key]: scenario.payload.value,
-            // Ensure email is unique so it doesn't collide with the storage file
-            email: key === "email" ? scenario.payload.value : `update.${Date.now()}@test.com`,
-          };
+
+          const rawValue = scenario.payload.value ?? Object.values(scenario.payload)[0];
+          const addressFields = ["streetAddress", "apartment", "city", "state", "postalCode", "countryCode"];
+          let updatePayload = { ...validBase, email: `success_test.${Date.now()}.${Math.random()}@test.com`};
+
+          if (addressFields.includes(key)) {
+            updatePayload.address = { ...validBase.address, [key]: rawValue };
+          } else {
+            updatePayload[key] = rawValue;
+          }
 
           const response = await test.step(`Submit update for ${key}`, async () => {
-            return await request.put(`${baseUrl}/${targetUserId}`, { data: updatePayload });
+            return await request.put(`${userEndpoint}/${targetUserId}`, { data: updatePayload });
           });
 
           // DEBUG: If it's still 400, this will tell you exactly why
@@ -52,24 +56,36 @@ test.describe("User update - dynamic validation", () => {
           expect(body.message).toBe("Success");
 
           await test.step(`Verify persistence`, async () => {
-            const verifyRes = await request.get(`${baseUrl}/${targetUserId}`);
-            const userData = await verifyRes.json();
+          const verifyRes = await request.get(`${userEndpoint}/${targetUserId}`);
+          const userData = await verifyRes.json();
 
-            let expectedValue = scenario.payload.value;
-            if (key === "email" && expectedValue) expectedValue = expectedValue.trim().toLowerCase();
+          let expectedValue = rawValue;
+          if (key === "email" && expectedValue) expectedValue = expectedValue.trim().toLowerCase();
 
+          if (["firstName", "lastName", "phoneNumber"].includes(key)) {
             expect(userData.data[key].toString().trim()).toBe(expectedValue.toString().trim());
-          });
+          } else if (addressFields.includes(key)) {
+            expect(userData.data.address[key].toString().trim()).toBe(expectedValue.toString().trim());
+          }
+        });
         });
       }
 
-
-
-
       for (const scenario of scenarios.negative) {
         test(`REJECT: ${scenario.testName}`, async ({ request }) => {
-          const invalidPayload = { ...validBase, [key]: scenario.payload.value };
-          const response = await request.put(`${baseUrl}/${targetUserId}`, { data: invalidPayload });
+
+          const rawValue = scenario.payload.value ?? Object.values(scenario.payload)[0];
+          const addressFields = ["streetAddress", "apartment", "city", "state", "postalCode", "countryCode"];
+          let invalidPayload = { ...validBase, email: `fail_test.${Date.now()}.${Math.random()}@test.com`};
+
+          if (addressFields.includes(key)) {
+            invalidPayload.address = { ...validBase.address, [key]: rawValue };
+          } else {
+            invalidPayload[key] = rawValue;
+          }
+
+;
+          const response = await request.put(`${userEndpoint}/${targetUserId}`, { data: invalidPayload });
 
           // PRO Check: If we sent a null and got a 200, but JSON expected 400,
           // it means the API is designed to ignore nulls.
@@ -86,7 +102,7 @@ test.describe("User update - dynamic validation", () => {
 
   test.afterAll(async ({ request }) => {
     if (targetUserId) {
-      await request.delete(`${baseUrl}/${targetUserId}`);
+      await request.delete(`${userEndpoint}/${targetUserId}`);
     }
   });
 });

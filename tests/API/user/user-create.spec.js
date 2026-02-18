@@ -60,10 +60,8 @@ test.describe("User API - Dynamic Creation Suite", () => {
     
     for (const scenario of scenarios.positive) {
       test(`SUCCESS: ${scenario.testName}`, async ({ request }) => {
-        // 1. FIX: Access value safely even if key is typoed (svaluee/cvaluey/streetAddress)
-        const rawValue = scenario.payload.value ?? Object.values(scenario.payload)[0];
         
-        // 2. FIX: Correctly nest address fields so the API actually updates them
+        const rawValue = scenario.payload.value ?? Object.values(scenario.payload)[0];       
         const addressFields = ["streetAddress", "apartment", "city", "state", "postalCode", "countryCode"];
         let payload = { 
           ...validBase, 
