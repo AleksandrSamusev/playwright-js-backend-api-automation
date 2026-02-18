@@ -8,16 +8,21 @@ jobs:
     name: Run Playwright API Tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      
+      - name: Checkout Tests
+        uses: actions/checkout@v4
+        with:
+          # This tells GitHub to check out the same branch name 
+          # that triggered the push in the backend repo
+          ref: ${{ github.event.client_payload.branch }}
+
       - uses: actions/setup-node@v4
         with:
           node-version: lts/*
-          
+
       - name: Install dependencies
         run: npm ci
-        
-      # BROWSER INSTALLATION REMOVED - This will save significant time
+
+      # Browser installation removed for speed as discussed
       
       - name: Run Playwright tests
         run: npx playwright test
@@ -27,7 +32,7 @@ jobs:
   deploy:
     name: Trigger Koyeb Redeploy
     needs: test
-    # Only runs if the 'test' job passes AND the backend branch was 'main'
+    # Safety: Only redeploy to Koyeb if the backend branch was 'main'
     if: github.event.client_payload.branch == 'main'
     runs-on: ubuntu-latest
     steps:
