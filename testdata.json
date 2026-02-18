@@ -251,28 +251,297 @@
       ]
     },
     "apartmentScenarios": {
-      "positive": [],
-      "negative": []
+      "positive": [
+        {
+          "testName": "apartment with allowed chars",
+          "payload": { "apartment": "123-bc.12 A" },
+          "expected": { "status": 200, "message": "Success" }
+        },
+        {
+          "testName": "apartment boundary: 50",
+          "payload": { "apartment": "123-ABC-bc123-ABC-bc123-ABC-bc123-ABC-bc123-ABC-bc" },
+          "expected": { "status": 200, "message": "Success" }
+        },
+        {
+          "testName": "apartment normalization: leading/trailing spaces",
+          "payload": { "apartment": "     123-bc.12 A      " },
+          "expected": { "status": 200, "message": "Success" }
+        }
+      ],
+      "negative": [
+        {
+          "testName": "apartment with invalid chars",
+          "payload": { "apartment": "123-bc/12 A" },
+          "expected": { "status": 400, "error": "Apartment contains invalid characters" }
+        },
+        {
+          "testName": "apartment too long (51 char)",
+          "payload": { "apartment": "123-ABC-bc123-ABC-bc123-ABC-bc123-ABC-bc123-ABC-bc1" },
+          "expected": { "status": 400, "error": "Apartment is too long (maximum 50 characters)" }
+        },
+        {
+          "testName": "apartment with comma injected",
+          "payload": { "apartment": "123-bc,12 A" },
+          "expected": { "status": 400, "error": "Apartment contains invalid characters" }
+        }
+      ]
     },
     "cityScenarios": {
-      "positive": [],
-      "negative": []
+      "positive": [
+        {
+          "testName": "city with allowed chars",
+          "payload": { "city": "London.c-d aB" },
+          "expected": { "status": 200, "message": "Success" }
+        },
+        { "testName": "city boundary: 2", "payload": { "city": "Bu" }, "expected": { "status": 200, "message": "Success" } },
+        {
+          "testName": "city boundary: 50",
+          "payload": { "city": "BulevBulevBulevBulevBulevBulevBulevBulevBulevBulev" },
+          "expected": { "status": 200, "message": "Success" }
+        },
+        {
+          "testName": "city normalization: leading/trailing spaces",
+          "payload": { "city": "       London.c-d aB         " },
+          "expected": { "status": 200, "message": "Success" }
+        }
+      ],
+      "negative": [
+        {
+          "testName": "city with blank value",
+          "payload": { "city": "" },
+          "expected": { "status": 400, "error": "City must not be blank" }
+        },
+        {
+          "testName": "city with null value",
+          "payload": { "city": null },
+          "expected": { "status": 400, "error": "City must not be blank" }
+        },
+        {
+          "testName": "city with invalid chars",
+          "payload": { "city": "London/c-d aB" },
+          "expected": { "status": 400, "error": "City contains invalid characters" }
+        },
+        {
+          "testName": "city too short (1 char)",
+          "payload": { "city": "A" },
+          "expected": { "status": 400, "error": "City must be between 2 and 50 characters" }
+        },
+        {
+          "testName": "city too long (51 char)",
+          "payload": { "city": "MilanMilanMilanMilanMilanMilanMilanMilanMilanMilanQ" },
+          "expected": { "status": 400, "error": "City must be between 2 and 50 characters" }
+        },
+        {
+          "testName": "city with only whitespaces",
+          "payload": { "city": "          " },
+          "expected": { "status": 400, "error": "City must not be blank" }
+        },
+        {
+          "testName": "city with comma injected",
+          "payload": { "city": "Milan, milan" },
+          "expected": { "status": 400, "error": "City contains invalid characters" }
+        },
+        {
+          "testName": "city with numeric input",
+          "payload": { "city": "Milan123" },
+          "expected": { "status": 400, "error": "City contains invalid characters" }
+        }
+      ]
     },
     "stateScenarios": {
-      "positive": [],
-      "negative": []
+      "positive": [
+        {
+          "testName": "state with allowed chars",
+          "payload": { "state": "New - Jersy.X" },
+          "expected": { "status": 200, "message": "Success" }
+        },
+        {
+          "testName": "state boundary: 50",
+          "payload": { "state": "TexasTexasTexasTexasTexasTexasTexasTexasTexasTexas" },
+          "expected": { "status": 200, "message": "Success" }
+        },
+        {
+          "testName": "state normalization: leading/trailing spaces",
+          "payload": { "state": "    New York     " },
+          "expected": { "status": 200, "message": "Success" }
+        }
+      ],
+      "negative": [
+        {
+          "testName": "state with invalid chars",
+          "payload": { "state": "North/ Carolina" },
+          "expected": { "status": 400, "error": "State contains invalid characters" }
+        },
+        {
+          "testName": "state too long (51 char)",
+          "payload": { "state": "TexasTexasTexasTexasTexasTexasTexasTexasTexasTexasX" },
+          "expected": { "status": 400, "error": "State is too long (maximum 50 characters)" }
+        },
+        {
+          "testName": "state with comma injected",
+          "payload": { "state": "North, Carolina" },
+          "expected": { "status": 400, "error": "State contains invalid characters" }
+        }
+      ]
     },
     "postalCodeScenarios": {
-      "positive": [],
-      "negative": []
+      "positive": [
+        {
+          "testName": "postalCode with allowed chars",
+          "payload": { "postalCode": "NY - 12" },
+          "expected": { "status": 200, "message": "Success" }
+        },
+        {
+          "testName": "postalCode boundary: 3",
+          "payload": { "postalCode": "N12" },
+          "expected": { "status": 200, "message": "Success" }
+        },
+        {
+          "testName": "postalCode boundary: 10",
+          "payload": { "postalCode": "NYC - NY-C" },
+          "expected": { "status": 200, "message": "Success" }
+        },
+        {
+          "testName": "postalCode normalization: leading/trailing spaces",
+          "payload": { "postalCode": "  NYC  " },
+          "expected": { "status": 200, "message": "Success" }
+        }
+      ],
+      "negative": [
+        {
+          "testName": "postalCode with blank value",
+          "payload": { "postalCode": "" },
+          "expected": { "status": 400, "error": "Postal Code must not be blank" }
+        },
+        {
+          "testName": "postalCode with null value",
+          "payload": { "postalCode": null },
+          "expected": { "status": 400, "error": "Postal Code must not be blank" }
+        },
+        {
+          "testName": "postalCode with invalid chars",
+          "payload": { "postalCode": "N-12/3" },
+          "expected": { "status": 400, "error": "Postal code must be uppercase letters, numbers, spaces or hyphens" }
+        },
+        {
+          "testName": "postalCode too short (2 char)",
+          "payload": { "postalCode": "1A" },
+          "expected": { "status": 400, "error": "Postal code must be between 3 and 10 characters" }
+        },
+        {
+          "testName": "postalCode too long (11 char)",
+          "payload": { "postalCode": "12345678901" },
+          "expected": { "status": 400, "error": "Postal code must be between 3 and 10 characters" }
+        },
+        {
+          "testName": "postalCode with only whitespaces",
+          "payload": { "postalCode": "     " },
+          "expected": { "status": 400, "error": "Postal Code must not be blank" }
+        },
+        {
+          "testName": "postalCode with comma injected",
+          "payload": { "postalCode": "123,A" },
+          "expected": { "status": 400, "error": "Postal code must be uppercase letters, numbers, spaces or hyphens" }
+        },
+        {
+          "testName": "postalCode with lower case input",
+          "payload": { "postalCode": "Ny-123" },
+          "expected": { "status": 400, "error": "Postal code must be uppercase letters, numbers, spaces or hyphens" }
+        }
+      ]
     },
     "countryCodeScenarios": {
-      "positive": [],
-      "negative": []
+      "positive": [
+        {
+          "testName": "countryCode with allowed chars",
+          "payload": { "countryCode": "US" },
+          "expected": { "status": 200, "message": "Success" }
+        }
+      ],
+      "negative": [
+         {
+          "testName": "countryCode with blank value",
+          "payload": { "countryCode": "" },
+          "expected": { "status": 400, "error": "Country code must not be blank" }
+        },
+        {
+          "testName": "countryCode with null value",
+          "payload": { "countryCode": null },
+          "expected": { "status": 400, "error": "Country code must not be blank" }
+        },
+        {
+          "testName": "countryCode with invalid chars",
+          "payload": { "countryCode": "G/" },
+          "expected": { "status": 400, "error": "Country code must be exactly 2 uppercase letters" }
+        },
+        {
+          "testName": "countryCode too short (1 char)",
+          "payload": { "countryCode": "A" },
+          "expected": { "status": 400, "error": "Country code must be exactly 2 uppercase letters" }
+        },
+        {
+          "testName": "countryCode too long (3 char)",
+          "payload": { "countryCode": "USA" },
+          "expected": { "status": 400, "error": "Country code must be exactly 2 uppercase letters" }
+        },
+        {
+          "testName": "countryCode with only whitespaces",
+          "payload": { "countryCode": "  " },
+          "expected": { "status": 400, "error": "Country code must not be blank" }
+        },
+        {
+          "testName": "countryCode with comma injected",
+          "payload": { "countryCode": "U," },
+          "expected": { "status": 400, "error": "Country code must be exactly 2 uppercase letters" }
+        },
+        {
+          "testName": "countryCode with lower case input",
+          "payload": { "countryCode": "Ga" },
+          "expected": { "status": 400, "error": "Country code must be exactly 2 uppercase letters" }
+        },
+        {
+          "testName": "countryCode with numeric input",
+          "payload": { "countryCode": "Ga" },
+          "expected": { "status": 400, "error": "Country code must be exactly 2 uppercase letters" }
+        }
+      ]
     },
     "auditFieldsScenarios": {
-      "positive": [],
-      "negative": []
+      "positive": [
+        {
+          "testName": "createdOn is present",
+          "payload": { "createdOn": "2026-02-18T14:48:19.6000658" },
+          "expected": { "status": 200, "message": "Success" }
+        },
+        {
+          "testName": "updatedOn is present",
+          "payload": { "updatedOn": "2026-02-18T14:48:19.6000658" },
+          "expected": { "status": 200, "message": "Success" }
+        }
+        
+      ],
+      "negative": [
+        {
+          "testName": "createdOn is blank",
+          "payload": { "createdOn": "" },
+          "expected": { "status": 400 }
+        },
+        {
+          "testName": "createdOn is null",
+          "payload": { "createdOn": null },
+          "expected": { "status": 400 }
+        },
+        {
+          "testName": "updateOn is blank",
+          "payload": { "updateOn": "" },
+          "expected": { "status": 400 }
+        },
+        {
+          "testName": "updateOn is null",
+          "payload": { "createdOn": null },
+          "expected": { "status": 400 }
+        }
+      ]
     }
   },
 
