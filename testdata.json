@@ -2,7 +2,7 @@
   "contractExpectations": {
     "errorResponse": ["success", "errorCode", "message", "errors", "path", "timestamp"],
     "successResponse": ["success", "message", "data", "timestamp"],
-    "userObject": ["id", "firstName", "lastName", "email", "phoneNumber"]
+    "userObject": ["id", "firstName", "lastName", "email", "phoneNumber", "address"]
   },
 
   "userEndpoints": {
@@ -17,7 +17,15 @@
           "firstName": "Bernardo",
           "lastName": "Honda",
           "email": "bernardo.honda@test.jp",
-          "phoneNumber": "+17026201348"
+          "phoneNumber": "+17026201348",
+          "address": {
+            "streetAddress": "Bulevar oslobodjenja 12",
+            "apartment": "4B",
+            "city": "Novi Sad",
+            "state": "Vojvodina",
+            "postalCode": "21000",
+            "countryCode": "RS"
+          }
         },
         "expected": { "status": 200, "message": "Success" }
       }
@@ -39,7 +47,7 @@
         "testName": "boundary: 50 chars",
         "payload": { "value": "JuliaJuliaJuliaJuliaJuliaJuliaJuliaJuliaJuliaJulia" },
         "expected": { "status": 200, "message": "Success" }
-      },      
+      },
       { "testName": "hyphen or space", "payload": { "value": "Maria-Corsa Bebetta" }, "expected": { "status": 200, "message": "Success" } }
     ],
     "negative": [
@@ -183,6 +191,90 @@
       "order": "desc"
     }
   ],
+
+  "addressScenarios": {
+    "streetAddressScenarios": {
+      "positive": [
+        {
+          "testName": "streetAddress with allowed chars",
+          "payload": { "streetAddress": "Bulevar-oslobodjenja st. 12" },
+          "expected": { "status": 200, "message": "Success" }
+        },
+        { "testName": "streetAddress boundary: 5", "payload": { "streetAddress": "Bu st." }, "expected": { "status": 200, "message": "Success" } },
+        {
+          "testName": "streetAddress boundary: 100",
+          "payload": { "streetAddress": "BulevariosBulevariosBulevariosBulevariosBulevariosBulevariosBulevariosBulevariosBulevariosBuleva st." },
+          "expected": { "status": 200, "message": "Success" }
+        },
+        {
+          "testName": "streetAddress normalization: leading/trailing spaces",
+          "payload": { "streetAddress": "Bu st." },
+          "expected": { "status": 200, "message": "Success" }
+        }
+      ],
+      "negative": [
+        {
+          "testName": "streetAddress with blank value",
+          "payload": { "streetAddress": "" },
+          "expected": { "status": 400, "error": "Street address must not be blank" }
+        },
+        {
+          "testName": "streetAddress with null value",
+          "payload": { "streetAddress": null },
+          "expected": { "status": 400, "error": "Street address must not be blank" }
+        },
+        {
+          "testName": "streetAddress with invalid chars",
+          "payload": { "streetAddress": "Bulevar-oslobo@djenja st. 12" },
+          "expected": { "status": 400, "error": "Street address contains invalid characters" }
+        },
+        {
+          "testName": "streetAddress too short (4 chars)",
+          "payload": { "streetAddress": "A st" },
+          "expected": { "status": 400, "error": "Street address must be between 5 and 100 characters" }
+        },
+        {
+          "testName": "streetAddress too long (101 char)",
+          "payload": { "streetAddress": "BulevariosBulevariosBulevariosBulevariosBulevariosBulevariosBulevariosBulevariosBulevariosBulevar st." },
+          "expected": { "status": 400, "error": "Street address must be between 5 and 100 characters" }
+        },
+        {
+          "testName": "streetAddress with only whitespaces",
+          "payload": { "streetAddress": "          " },
+          "expected": { "status": 400, "error": "Street address must not be blank" }
+        },
+        {
+          "testName": "streetAddress with comma injected",
+          "payload": { "streetAddress": "Bulevar-oslobodjenja, st. 12" },
+          "expected": { "status": 400, "error": "Street address contains invalid characters" }
+        }
+      ]
+    },
+    "apartmentScenarios": {
+      "positive": [],
+      "negative": []
+    },
+    "cityScenarios": {
+      "positive": [],
+      "negative": []
+    },
+    "stateScenarios": {
+      "positive": [],
+      "negative": []
+    },
+    "postalCodeScenarios": {
+      "positive": [],
+      "negative": []
+    },
+    "countryCodeScenarios": {
+      "positive": [],
+      "negative": []
+    },
+    "auditFieldsScenarios": {
+      "positive": [],
+      "negative": []
+    }
+  },
 
   "updateScenarios": {
     "positive": [
