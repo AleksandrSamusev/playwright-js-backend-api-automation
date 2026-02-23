@@ -1,0 +1,255 @@
+{
+  "contractExpectations": {
+    "errorResponse": ["success", "errorCode", "message", "errors", "path", "timestamp"],
+    "successResponse": ["success", "message", "data", "timestamp"],
+    "productResponseObject": ["id", "name","category", "manufacturer", "price", "salePrice", "currencyCode", "sku",
+                              "quantityInStock", "expectedAvailabilityDate", "attributes", "imageUrl", "status", "version"]
+  },
+  "validPayload": {
+    "name": "Kettle",
+    "category": "Kitchen",
+    "manufacturer": "Deco",
+    "price": 11.5,
+    "costPrice": 10.0,
+    "salePrice": 11.0,
+    "currencyCode": "USD",
+    "sku": "KT-WT-1234",
+    "quantityInStock": 0,
+    "lowStockThreshold": 1,
+    "status": "IN_STOCK",
+    "expectedAvailabilityDate": "2026-12-31T23:59:59",
+    "imageUrl": "https://example.com/products/blanket.jpg",
+    "attributes": {
+      "color": "White",
+      "pattern": "Dragon",
+      "collection": "Big City",
+      "tags": ["home", "soft", "lazy"]
+    },
+    "createdBy": "Alex Brown"
+  },
+  "userEndpoints": {"base": "api/v1/products"},
+  "createScenarios": {
+    "productNameScenarios": {
+      "positive": [
+        {"testName": "valid value", "payload": { "value": "alex" },"expected": { "status": 200, "message": "Success" }},
+        {"testName": "leading and trailing spaces", "payload": { "value": "  alex  " },"expected": { "status": 200, "message": "Success" }},
+        {"testName": "boundary: 2 chars","payload": { "value": "al" }, "expected": { "status": 200, "message": "Success" }},
+        {"testName": "boundary: 150 chars","payload": {"value": "alexissossalexissossalexissossalexissossalexissossalexissossalexissossalexissossalexissossalexissossalexissossalexissossalexissossalexissossalexissoss"}, "expected": { "status": 200, "message": "Success" }},
+        {"testName": "using capital letters", "payload": { "value": "Alex" }, "expected": { "status": 200, "message": "Success" }},
+        {"testName": "with spaces", "payload": { "value": "Alex Manner Jr" }, "expected": { "status": 200, "message": "Success" }},
+        {"testName": "with dot", "payload": { "value": "Alex Jr." },"expected": { "status": 200, "message": "Success" }},
+        {"testName": "with hyphen", "payload": { "value": "Alex-Morales" }, "expected": { "status": 200, "message": "Success" }}
+      ],
+      "negative": [
+        {"testName": "empty string", "payload": { "value": "" }, "expected": { "status": 400, "error": "Product name must not be blank" }},
+        {"testName": "null value", "payload": { "value": null }, "expected": { "status": 400, "error": "Product name must not be blank" }},
+        {"testName": "whitespaces only", "payload": { "value": "          " }, "expected": { "status": 400, "error": "Product name must not be blank" }},
+        {"testName": "numeric input", "payload": { "value": "Alex123" }, "expected": { "status": 400, "error": "Product name has unsupported characters" }},
+        {"testName": "with comma", "payload": { "value": "Alex, Jr" }, "expected": { "status": 400, "error": "Product name has unsupported characters" }},
+        {"testName": "with special characters", "payload": { "value": "Alex/ Jr" }, "expected": { "status": 400, "error": "Product name has unsupported characters" }},
+        {"testName": "input lenght 1 character", "payload": { "value": "A" }, "expected": { "status": 400, "error": "Product name must be between 2 and 150 characters" }},
+        {"testName": "input lenght 151 character", "payload": {"value": "alexissossalexissossalexissossalexissossalexissossalexissossalexXissossalexissossalexissossalexissossalexissossalexissossalexissossalexissossalexissoss"}, "expected": { "status": 400, "error": "Product name must be between 2 and 150 characters" }}
+      ]
+    },
+    "productCategoryScenarios": {
+      "positive": [
+        {"testName": "valid value", "payload": { "value": "category" }, "expected": { "status": 200, "message": "Success" }},
+        {"testName": "leading and trailing spaces", "payload": { "value": "  category  " }, "expected": { "status": 200, "message": "Success" }},
+        {"testName": "boundary: 2 chars", "payload": { "value": "ca" }, "expected": { "status": 200, "message": "Success" }},
+        {"testName": "boundary: 50 chars", "payload": {"value": "categorycacategorycacategorycacategorycacategoryca"},"expected": { "status": 200, "message": "Success" }},
+        {"testName": "using capital letters", "payload": { "value": "Category" }, "expected": { "status": 200, "message": "Success" }},
+        {"testName": "with spaces", "payload": { "value": "Category one" }, "expected": { "status": 200, "message": "Success" }},
+        {"testName": "with numbers", "payload": { "value": "Category 123" }, "expected": { "status": 200, "message": "Success" }},
+        {"testName": "with hyphen", "payload": { "value": "category-one" },"expected": { "status": 200, "message": "Success" }},
+        {"testName": "with underscore", "payload": { "value": "category_one" }, "expected": { "status": 200, "message": "Success" }},
+        {"testName": "with forward slash", "payload": { "value": "category/one" }, "expected": { "status": 200, "message": "Success" }},
+        {"testName": "with &", "payload": { "value": "category & one" }, "expected": { "status": 200, "message": "Success" }},
+        {"testName": "with single quote", "payload": { "value": "category'one" }, "expected": { "status": 200, "message": "Success" }},
+        {"testName": "with brackets", "payload": { "value": "category (one)" }, "expected": { "status": 200, "message": "Success" }}
+      ],
+      "negative": [
+        {"testName": "empty string", "payload": { "value": "" }, "expected": { "status": 400, "error": "Category must not be blank" }},
+        {"testName": "null value", "payload": { "value": null }, "expected": { "status": 400, "error": "Category must not be blank" }},
+        {"testName": "whitespaces only", "payload": { "value": "          " }, "expected": { "status": 400, "error": "Category must not be blank" }},
+        {"testName": "with comma", "payload": { "value": "Alex, Jr" }, "expected": { "status": 400, "error": "Category has unsupported characters" }},
+        {"testName": "input lenght 1 character", "payload": { "value": "A" }, "expected": { "status": 400, "error": "Category must be between 2 and 50 characters" }},
+        {"testName": "input lenght 51 character", "payload": {"value": "categorycacategorycacategorycacategorycacategorycaa"},"expected": { "status": 400, "error": "Category must be between 2 and 50 characters" }}
+      ]
+    },
+    "productManufacturerScenarios": {
+      "positive": [
+        {"testName": "valid value", "payload": { "value": "manufacturer" }, "expected": { "status": 200, "message": "Success" }},
+        {"testName": "leading and trailing spaces", "payload": { "value": "  manufacturer  " }, "expected": { "status": 200, "message": "Success" }},
+        {"testName": "boundary: 2 chars", "payload": { "value": "ma" }, "expected": { "status": 200, "message": "Success" }},
+        {"testName": "boundary: 150 chars", "payload": {"value": "manufacturmanufacturmanufacturmanufacturmanufacturmanufacturmanufacturmanufacturmanufacturmanufacturmanufacturmanufacturmanufacturmanufacturmanufactur"},"expected": { "status": 200, "message": "Success" }},
+        {"testName": "using capital letters", "payload": { "value": "Manufacturer" }, "expected": { "status": 200, "message": "Success" }},
+        {"testName": "with spaces", "payload": { "value": "manufacturer one" }, "expected": { "status": 200, "message": "Success" }},
+        {"testName": "with numbers", "payload": { "value": "manufacturer 123" }, "expected": { "status": 200, "message": "Success" }},
+        {"testName": "with hyphen", "payload": { "value": "manufacturer-one" },"expected": { "status": 200, "message": "Success" }},
+        {"testName": "with underscore", "payload": { "value": "manufacturer_one" }, "expected": { "status": 200, "message": "Success" }},
+        {"testName": "with forward slash", "payload": { "value": "manufacturer/one" }, "expected": { "status": 200, "message": "Success" }},
+        {"testName": "with &", "payload": { "value": "manufacturer & one" }, "expected": { "status": 200, "message": "Success" }},
+        {"testName": "with single quote", "payload": { "value": "manufacturer'one" }, "expected": { "status": 200, "message": "Success" }},
+        {"testName": "with brackets", "payload": { "value": "manufacturer (one)" }, "expected": { "status": 200, "message": "Success" }}
+      ],
+      "negative": [
+        {"testName": "empty string", "payload": { "value": "" }, "expected": { "status": 400, "error": "Manufacturer must not be blank" }},
+        {"testName": "null value", "payload": { "value": null }, "expected": { "status": 400, "error": "Manufacturer must not be blank" }},
+        {"testName": "whitespaces only", "payload": { "value": "          " }, "expected": { "status": 400, "error": "Manufacturer must not be blank" }},
+        {"testName": "with comma", "payload": { "value": "Alex, Jr" }, "expected": { "status": 400, "error": "Manufacturer has unsupported characters" }},
+        {"testName": "input lenght 1 character", "payload": { "value": "A" }, "expected": { "status": 400, "error": "Manufacturer must be between 2 and 150 characters" }},
+        {"testName": "input lenght 151 character", "payload": {"value": "manufacturmanufacsturmanufacturmanufacturmanufacturmanufacturmanufacturmanufacturmanufacturmanufacturmanufacturmanufacturmanufacturmanufacturmanufactur"},"expected": { "status": 400, "error": "Manufacturer must be between 2 and 150 characters" }}
+      ]
+    },
+    "priceScenarios": {
+      "positive": [
+        {"testName": "valid value", "payload": { "value": 9.99 }, "expected": { "status": 200, "message": "Success" }},
+        {"testName": "minimum bound", "payload": { "value": 0.01 }, "expected": { "status": 200, "message": "Success" }},
+        {"testName": "maximum bound", "payload": { "value": 999999.99 }, "expected": { "status": 200, "message": "Success" }},
+        {"testName": "whole number", "payload": {"value": 100},"expected": { "status": 200, "message": "Success" }},
+        {"testName": "single demical", "payload": { "value": 10.1 }, "expected": { "status": 200, "message": "Success" }}
+      ],
+      "negative": [
+        {"testName": "below minimum", "payload": { "value": 0.00 }, "expected": { "status": 400, "error": "Price must be at least 0.01" }},
+        {"testName": "null value", "payload": { "value": null }, "expected": { "status": 400, "error": "Price is mandatory" }},
+        {"testName": "negative value", "payload": { "value": -5.50 }, "expected": { "status": 400, "error": "Price must be at least 0.01" }},
+        {"testName": "above maximum", "payload": { "value": 1000000.00 }, "expected": { "status": 400, "error": "Price exceeds the maximum allowed value" }},
+        {"testName": "too many integers", "payload": { "value": 1234567.89 }, "expected": { "status": 400, "error": "Price must have up to 6 digits and 2 decimals (e.g. 123456.78)" }},
+        {"testName": "too many demicals", "payload": {"value": 10.123},"expected": { "status": 400, "error": "Price must have up to 6 digits and 2 decimals (e.g. 123456.78)" }}
+      ]
+    },
+    "costPriceScenarios": {
+      "positive": [
+        {"testName": "valid value", "payload": { "value": 9.99 }, "expected": { "status": 200, "message": "Success" }},
+        {"testName": "minimum bound", "payload": { "value": 0.01 }, "expected": { "status": 200, "message": "Success" }},
+        {"testName": "maximum bound", "payload": { "value": 999999.99 }, "expected": { "status": 200, "message": "Success" }},
+        {"testName": "whole number", "payload": {"value": 100},"expected": { "status": 200, "message": "Success" }},
+        {"testName": "single demical", "payload": { "value": 10.1 }, "expected": { "status": 200, "message": "Success" }}
+      ],
+      "negative": [
+        {"testName": "below minimum", "payload": { "value": 0.00 }, "expected": { "status": 400, "error": "Cost price must be at least 0.01" }},
+        {"testName": "null value", "payload": { "value": null }, "expected": { "status": 400, "error": "Cost price is mandatory" }},
+        {"testName": "negative value", "payload": { "value": -5.50 }, "expected": { "status": 400, "error": "Cost price must be at least 0.01" }},
+        {"testName": "above maximum", "payload": { "value": 1000000.00 }, "expected": { "status": 400, "error": "Cost price exceeds the maximum allowed value" }},
+        {"testName": "too many integers", "payload": { "value": 1234567.89 }, "expected": { "status": 400, "error": "Cost price must have up to 6 digits and 2 decimals (e.g. 123456.78)" }},
+        {"testName": "too many demicals", "payload": {"value": 10.123},"expected": { "status": 400, "error": "Cost price must have up to 6 digits and 2 decimals (e.g. 123456.78)" }}
+      ]
+    },
+    "salePriceScenarios": {
+      "positive": [
+        {"testName": "valid value", "payload": { "value": 9.99 }, "expected": { "status": 200, "message": "Success" }},
+        {"testName": "minimum bound", "payload": { "value": 0.01 }, "expected": { "status": 200, "message": "Success" }},
+        {"testName": "maximum bound", "payload": { "value": 999999.99 }, "expected": { "status": 200, "message": "Success" }},
+        {"testName": "whole number", "payload": {"value": 100},"expected": { "status": 200, "message": "Success" }},
+        {"testName": "single demical", "payload": { "value": 10.1 }, "expected": { "status": 200, "message": "Success" }}
+      ],
+      "negative": [
+        {"testName": "below minimum", "payload": { "value": 0.00 }, "expected": { "status": 400, "error": "Sale price must be at least 0.01" }},
+        {"testName": "negative value", "payload": { "value": -5.50 }, "expected": { "status": 400, "error": "Sale price must be at least 0.01" }},
+        {"testName": "above maximum", "payload": { "value": 1000000.00 }, "expected": { "status": 400, "error": "Sale price exceeds the maximum allowed value" }},
+        {"testName": "too many integers", "payload": { "value": 1234567.89 }, "expected": { "status": 400, "error": "Sale price must have up to 6 digits and 2 decimals (e.g. 123456.78)" }},
+        {"testName": "too many demicals", "payload": {"value": 10.123},"expected": { "status": 400, "error": "Sale price must have up to 6 digits and 2 decimals (e.g. 123456.78)" }}
+      ]
+    },
+    "currencyCodeScenarios": {
+      "positive": [
+        {"testName": "valid value", "payload": { "value": "EUR" }, "expected": { "status": 200, "message": "Success" }},        
+        {"testName": "boundary: 3 chars", "payload": { "value": "EUR" }, "expected": { "status": 200, "message": "Success" }}     
+      ],
+      "negative": [
+        {"testName": "empty string", "payload": { "value": "" }, "expected": { "status": 400, "error": "Currency code is mandatory" }},
+        {"testName": "leading and trailing spaces", "payload": { "value": " E " }, "expected": { "status": 400, "error": "Currency code must be exactly 3 upper case letters" }},
+        {"testName": "null value", "payload": { "value": null }, "expected": { "status": 400, "error": "Currency code is mandatory" }},
+        {"testName": "whitespaces only", "payload": { "value": "   " }, "expected": { "status": 400, "error": "Currency code is mandatory" }},
+        {"testName": "with comma", "payload": { "value": "E,R" }, "expected": { "status": 400, "error": "Currency code must be exactly 3 upper case letters" }},
+        {"testName": "boundary: 1 character", "payload": { "value": "A" }, "expected": { "status": 400, "error": "Currency code must be exactly 3 upper case letters" }},
+        {"testName": "boundary: 4 character", "payload": {"value": "EURO"},"expected": { "status": 400, "error": "Currency code must be exactly 3 upper case letters" }},
+        {"testName": "special characters", "payload": { "value": "E/R" }, "expected": { "status": 400, "error": "Currency code must be exactly 3 upper case letters" }},
+        {"testName": "with lower case letters", "payload": {"value": "Eur"},"expected": { "status": 400, "error": "Currency code must be exactly 3 upper case letters" }}
+      ]
+    },
+    "skuScenarios": {
+      "positive": [
+        {"testName": "valid value", "payload": { "value": "ABCABCABC" }, "expected": { "status": 200, "message": "Success" }},        
+        {"testName": "boundary: 6 chars", "payload": { "value": "ABCABC" }, "expected": { "status": 200, "message": "Success" }},
+        {"testName": "boundary: 40 chars", "payload": {"value": "ABCABCABCAABCABCABCAABCABCABCA"},"expected": { "status": 200, "message": "Success" }},
+        {"testName": "with numbers", "payload": { "value": "A1BA2BA3B" }, "expected": { "status": 200, "message": "Success" }},
+        {"testName": "with hyphens", "payload": { "value": "AB-ADFB-A" },"expected": { "status": 200, "message": "Success" }}
+      ],
+      "negative": [
+        {"testName": "empty string", "payload": { "value": "" }, "expected": { "status": 400, "error": "SKU is mandatory" }},
+        {"testName": "null value", "payload": { "value": null }, "expected": { "status": 400, "error": "SKU is mandatory" }},
+        {"testName": "leading and trailing spaces", "payload": { "value": "  ABCABCABC  " }, "expected": { "status": 400, "error": "SKU must be alphanumeric and can include hyphens" }},
+        {"testName": "whitespaces only", "payload": { "value": "          " }, "expected": { "status": 400, "error": "SKU is mandatory" }},
+        {"testName": "with comma", "payload": { "value": "ABCABC,ABC" }, "expected": { "status": 400, "error": "SKU must be alphanumeric and can include hyphens" }},
+        {"testName": "with lower case letters", "payload": { "value": "ABCABCabc" }, "expected": { "status": 400, "error": "SKU must be alphanumeric and can include hyphens" }},
+        {"testName": "with whitespace", "payload": { "value": "ABCABC ABC" }, "expected": { "status": 400, "error": "SKU must be alphanumeric and can include hyphens" }},
+        {"testName": "with special characters", "payload": { "value": "ABC@ABC" }, "expected": { "status": 400, "error": "SKU must be alphanumeric and can include hyphens" }},
+        {"testName": "input lenght 5 character", "payload": { "value": "ABCAB" }, "expected": { "status": 400, "error": "SKU must be between 6 and 30 characters" }},
+        {"testName": "input lenght 31 character", "payload": {"value": "ABCABCABCAABCABCABCAABCABCABCAX"},"expected": { "status": 400, "error": "SKU must be between 6 and 30 characters" }}
+      ]
+    },
+    "quantityInStockScenarios": {
+      "positive": [
+        {"testName": "valid value", "payload": { "value": 10 }, "expected": { "status": 200, "message": "Success" }},
+        {"testName": "minimum bound", "payload": { "value": 0 }, "expected": { "status": 200, "message": "Success" }},
+        {"testName": "maximum bound", "payload": { "value": 999999 }, "expected": { "status": 200, "message": "Success" }},
+        {"testName": "just above min", "payload": {"value": 1},"expected": { "status": 200, "message": "Success" }},
+        {"testName": "just below max", "payload": { "value": 999998 }, "expected": { "status": 200, "message": "Success" }}
+      ],
+      "negative": [
+        {"testName": "null value", "payload": { "value": null }, "expected": { "status": 400, "error": "Quantity in stock is mandatory" }},
+        {"testName": "negative value", "payload": { "value": -5 }, "expected": { "status": 400, "error": "Quantity in stock must not be negative" }},
+        {"testName": "above maximum", "payload": { "value": 1000000 }, "expected": { "status": 400, "error": "Quantity in stock exceeds warehouse capacity" }},
+        {"testName": "large overflow", "payload": {"value": 2147483648 },"expected": { "status": 400, "error": "" }}
+      ]
+    },
+    "lowStockThresholdScenarios": {
+      "positive": [
+        {"testName": "valid value", "payload": { "value": 10 }, "expected": { "status": 200, "message": "Success" }},
+        {"testName": "minimum bound", "payload": { "value": 1 }, "expected": { "status": 200, "message": "Success" }},
+        {"testName": "maximum bound", "payload": { "value": 999999 }, "expected": { "status": 200, "message": "Success" }},
+        {"testName": "just above min", "payload": {"value": 2},"expected": { "status": 200, "message": "Success" }},
+        {"testName": "just below max", "payload": { "value": 999998 }, "expected": { "status": 200, "message": "Success" }}
+      ],
+      "negative": [
+        {"testName": "null value", "payload": { "value": null }, "expected": { "status": 400, "error": "Low stock threshold is mandatory" }},
+        {"testName": "negative value", "payload": { "value": -5 }, "expected": { "status": 400, "error": "Low stock threshold must be at least 1" }},
+        {"testName": "above maximum", "payload": { "value": 1000000 }, "expected": { "status": 400, "error": "Low stock threshold exceeds warehouse capacity" }},
+        {"testName": "large overflow", "payload": {"value": 2147483648 },"expected": { "status": 400, "error": "" }}
+      ]
+    },
+    "expectedAvailabilityDateScenarios": {
+      "positive": [
+        {"testName": "valid value", "payload": { "value": "2026-12-25T09:00:00" }, "expected": { "status": 200, "message": "Success" }}
+      ],
+      "negative": [
+        {"testName": "date in past", "payload": { "value": "2025-12-25T09:00:00" }, "expected": { "status": 400, "error": "Date must be in the future" }},
+        {"testName": "mailformed format", "payload": { "value": "23/02/2026 03:56" }, "expected": { "status": 400, "error": "" }}
+      ]
+    },
+    "imageUrlScenarios": {
+      "positive": [
+        {"testName": "standatd HTTPS", "payload": { "value": "https://example.com/image.jpg" }, "expected": { "status": 200, "message": "Success" }},
+        {"testName": "standard HTTP", "payload": { "value": "http://example.com/image.jpg" }, "expected": { "status": 200, "message": "Success" }},
+        {"testName": "with sub domain", "payload": { "value": "https://cdn.myshop.io" }, "expected": { "status": 200, "message": "Success" }},
+        {"testName": "ip address", "payload": { "value": "http://192.168.1.1" }, "expected": { "status": 200, "message": "Success" }}
+      ],
+      "negative": [
+        {"testName": "missing protocol", "payload": { "value": "://www.google.com" }, "expected": { "status": 400, "error": "" }},
+        {"testName": "missing domain", "payload": { "value": "https:///image.jpg" }, "expected": { "status": 400, "error": "" }},
+        {"testName": "invalid characters", "payload": { "value": "https://example.com/my image.jpg" }, "expected": { "status": 400, "error": "" }},
+        {"testName": "random string", "payload": { "value": "not-a-url" }, "expected": { "status": 400, "error": "" }},
+        {"testName": "incomplete protocol", "payload": { "value": "http:/missing-slash.com" }, "expected": { "status": 400, "error": "" }}
+      ]
+    },
+    "statusScenarios": {
+      "positive": [],
+      "negative": [
+        {"testName": "null value", "payload": { "value": null }, "expected": { "status": 400, "error": "" }},
+        {"testName": "empty string", "payload": { "value": "" }, "expected": { "status": 400, "error": "" }},
+        {"testName": "lower case letters", "payload": { "value": "in_stock" }, "expected": { "status": 400, "error": "" }}
+      ]
+    }
+  }
+}

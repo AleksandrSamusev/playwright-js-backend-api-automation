@@ -27,8 +27,8 @@ export default defineConfig({
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('')`. */
-    baseURL: "https://ratty-merrily-devpractice-8e62228c.koyeb.app",
-    //baseURL: 'http://localhost:8080',
+    //baseURL: "https://ratty-merrily-devpractice-8e62228c.koyeb.app",
+    baseURL: 'http://localhost:8080',
     extraHTTPHeaders: {
       "Content-Type": "application/json",
       Accept: "application/json",
